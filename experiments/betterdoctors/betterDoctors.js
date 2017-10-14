@@ -4,7 +4,6 @@ const requestPromise = require('request-promise')
 
 function doctorSearch(location='37.773,-122.413', radius='100', limit='10') {
   const api_key = process.env.BETTERDOCTOR_COM_API_KEY
-  console.log('api_key: ' + api_key)
   const resource_url = 'https://api.betterdoctor.com/2016-03-01/doctors?location='+location+','+radius+'&skip=2&limit='+limit+'&user_key=' + api_key;
 
   var bdOpts = {
