@@ -1,0 +1,124 @@
+default type id in i/o exploerer: 82
+
+
+Patient Appointment Reasons:
+--------------------------------------------------------------------------------
+    }, {
+        "schedulingminhours": 24,
+        "reasontype": "existing",
+        "reason": "Lab Work",
+        "description": "I need to have blood drawn or undergo other tests.",
+        "reasonid": 565,
+        "schedulingmaxdays": 90
+    }]
+
+Patient Appointment Types:
+--------------------------------------------------------------------------------
+    }, {
+        "shortname": "Diab",
+        "name": "Diabetes",
+        "duration": 15,
+        "patientdisplayname": "Diabetes",
+        "appointmenttypeid": 582,
+        "generic": false,
+        "patient": true,
+        "createencounteroncheckin": false,
+        "templatetypeonly": false
+    }, {
+    }, {
+        "shortname": "5424",
+        "name": "Assessment - Well-Being  (30)",
+        "duration": 30,
+        "patientdisplayname": "Assessment - Well-Being  (30)",
+        "appointmenttypeid": 1592,
+        "generic": true,
+        "patient": true,
+        "createencounteroncheckin": false,
+        "templatetypeonly": false
+    }, {
+{
+        "shortname": "OV",
+        "name": "Office Visit",
+        "duration": 10,
+        "patientdisplayname": "Office Visit",
+        "appointmenttypeid": 2,
+        "generic": true,
+        "patient": true,
+        "createencounteroncheckin": true,
+        "templatetypeonly": false
+    }, {
+{
+        "shortname": "WSPA",
+        "name": "Web Scheduling Partner Apt",
+        "duration": 15,
+        "patientdisplayname": "Web Scheduling Partner Apt",
+        "appointmenttypeid": 683,
+        "generic": true,
+        "patient": true,
+        "createencounteroncheckin": false,
+        "templatetypeonly": false
+    }, {
+{
+        "shortname": "LAB",
+        "name": "Lab Work",
+        "duration": 15,
+        "patientdisplayname": "Lab Work",
+        "appointmenttypeid": 5,
+        "generic": false,
+        "patient": true,
+        "createencounteroncheckin": true,
+        "templatetypeonly": false
+    }, 
+    }, {
+        "shortname": "NP",
+        "name": "New Patient Appointment",
+        "duration": 30,
+        "patientdisplayname": "New Patient Appointment",
+        "appointmenttypeid": 8,
+        "generic": false,
+        "patient": true,
+        "createencounteroncheckin": true,
+        "templatetypeonly": false
+    }, {
+{
+        "shortname": "EST",
+        "name": "Established",
+        "duration": 15,
+        "patientdisplayname": "Established Visit",
+        "appointmenttypeid": 42,
+        "generic": false,
+        "patient": true,
+        "createencounteroncheckin": true,
+        "templatetypeonly": false
+    }, {
+{
+        "shortname": "LTST",
+        "name": "Lab Testing",
+        "duration": 5,
+        "patientdisplayname": "Lab Testing",
+        "appointmenttypeid": 302,
+        "generic": false,
+        "patient": true,
+        "createencounteroncheckin": false,
+        "templatetypeonly": false
+    }, {
+        "shortname": "ta",
+        "name": "test appt",
+        "duration": 20,
+        "patientdisplayname": "test appt",
+        "appointmenttypeid": 322,
+        "generic": false,
+        "patient": true,
+        "createencounteroncheckin": true,
+        "templatetypeonly": false
+    }, {
+        "shortname": "WST",
+        "name": "WebScheduleTest",
+        "duration": 15,
+        "patientdisplayname": "New Patient Web Schedule",
+        "appointmenttypeid": 362,
+        "generic": false,
+        "patient": true,
+        "createencounteroncheckin": false,
+        "templatetypeonly": false
+    }, {

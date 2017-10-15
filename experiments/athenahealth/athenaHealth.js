@@ -16,6 +16,7 @@ const auth_prefixes = {
 	openpreview1: '/oauthopenpreview',
 }
 
+const api_hostname = 'api.athenahealth.com'
 
 // This is a useful function to have
 function path_join() {
@@ -36,6 +37,7 @@ var signal = new events.EventEmitter
 
 // We need to save the token in an outer scope, because of callbacks.
 var token = process.env.ATHENAHEALTH_TOKEN
+//var token = undefined
 
 
 function authentication() {
@@ -50,7 +52,7 @@ function authentication() {
     var req = https.request({
       // Set up the request, making sure the content-type header is set. Let the https library do
       // the auth header (including base64 encoding) for us.
-      hostname: 'api.athenahealth.com',
+      hostname: api_hostname,
       method: 'POST',
       path: path_join(auth_prefixes[version], '/token'),
       auth: key + ':' + secret,
@@ -83,17 +85,22 @@ function authentication() {
 
 function departments() {
 	// Create and encode parameters
-	var parameters = {
-		limit: 1,
+	const parameters = {
+    limit:1,
+    offset:0,
+    hospitalonly:false,
+    providerlist:true,
+    showalldepartments:true,
 	}
 	var query = '?' + querystring.stringify(parameters)
 
-  const aPath = path_join(version, practiceid, '/departments', query)
-  console.log('path: \'' + aPath + '\'')
+  const deptsPath = path_join(version, practiceid, '/departments') + query
+  console.log('deptsPath: \'' + deptsPath + '\'')
+
 	var req = https.request({
-		hostname: 'api.athenahealth.com',
+		hostname: api_hostname,
 		method: 'GET',
-		path: aPath,
+		path: deptsPath,
 		// We set the auth header ourselves this time, because we have a token now.
 		headers: {'authorization': 'Bearer ' + token},
 	}, function(response) {
@@ -120,15 +127,16 @@ function notes() {
 		notetext: 'Javascript says hi!',
 	}
 	var content = querystring.stringify(parameters)
+
 	var req = https.request({
-		hostname: 'api.athenahealth.com',
+		hostname: api_hostname,
 		method: 'POST',
 		path: path_join(version, practiceid, '/appointments/1/notes'),
 		headers: {
 			'authorization': 'Bearer ' + token,
 			'content-type': 'application/x-www-form-urlencoded',
 			'content-length': content.length, // apparently we have to set this ourselves when using
-											  // application/x-www-form-urlencoded
+											                  // application/x-www-form-urlencoded
 		},
 	}, function(response) {
 		response.setEncoding('utf8')
@@ -150,10 +158,22 @@ function notes() {
 	req.end()
 }
 
+// Scheduling an appointment:
+// (ripped from quickstart here: https://developer.athenahealth.com/io-docs)
+// 1. get practice id
+// 2. get department id
+// 3. create a patient
+// 4. get that patient
+// 5. record that patient's issue
+// 6. (optional?) verify the issue has been recorded
+// 7. the patient wants to see provider; find an appointment slot
+// 8. book an appointment for the recorded issue
+// 9. (optional?) verify the appointment
+
 // This is one way of forcing the call order
 function main() {
-//	var calls = [authentication, departments, notes]
-	var calls = [departments]
+	var calls = [authentication, departments, notes]
+//	var calls = [departments, notes]
 	signal.on('next', function() {
 		var nextCall = calls.shift()
 		if (nextCall) {

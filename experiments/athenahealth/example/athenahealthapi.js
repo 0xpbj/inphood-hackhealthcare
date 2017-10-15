@@ -76,12 +76,13 @@ function path_join() {
  * @requires module:https
  * @requires module:querystring
  */
-function Connection(version, key, secret, practiceid) {
+function Connection(version, key, secret, practiceid, myToken=undefined) {
+	console.log('Connection called!')
 	// Private variables
 	var _version = ''
 	var _key = ''
 	var _secret = ''
-	var _token = ''
+	var _token = myToken
 	var _hostname = 'api.athenahealth.com'
 
 	/**
@@ -125,14 +126,21 @@ function Connection(version, key, secret, practiceid) {
 			'content-length': params.length,
 		}
 
-		// Make the request and propagate the events, storing the token for later
-		call(verb, path, params, headers, false)
-			.on('done', function(response) {
-				_token = response.access_token
-				emitter.emit('ready')
-			}).on('error', function(error) {
-				emitter.emit('error', error)
-			})
+		// AC: handle bearer token
+		if (!_token) {
+			// Make the request and propagate the events, storing the token for later
+			call(verb, path, params, headers, false)
+				.on('done', function(response) {
+					_token = response.access_token
+					console.log('fetched new token: ' + _token)
+					emitter.emit('ready')
+				}).on('error', function(error) {
+					emitter.emit('error', error)
+				})
+		} else {
+			console.log('using existing token: ' + _token)
+			emitter.emit('ready')
+		}
 
 		return emitter
 	}
