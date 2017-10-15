@@ -283,6 +283,7 @@ function findAppointmentSlots() {
 				console.log('   ' + appointment.duration + ' minutes')
 				console.log()
 			}
+			appointmentData.appointmentSlots = apptData.appointments
 			signal.emit('next')
 		})
 	})
@@ -297,6 +298,13 @@ function scheduleAppointment() {
 	let patientid = appointmentData.patientid ?
 		appointmentData.patientid : 30837
 
+	let appointmentid = appointmentData.appointmentid
+	if (!appointmentid) {
+		console.log('scheduleAppointment: setting appointmentid to slot 0')
+		const apptSlot0 = appointmentData.appointmentSlots[0]
+		appointmentid = apptSlot0.appointmentid
+	}
+
 	// Create and encode parameters
 	let parameters = {
 		appointmenttypeid:appointmentData.appointmenttypeid,
@@ -304,9 +312,6 @@ function scheduleAppointment() {
 		ignoreschedulablepermission:false
 	}
 	const query = '?' + querystring.stringify(parameters)
-
-	let appointmentid = appointmentData.appointmentid ?
-		appointmentData.appointmentid : 883988
 
 	const apptPath = path_join(
 		version, practiceid, 'appointments', appointmentid) + query
@@ -329,6 +334,7 @@ function scheduleAppointment() {
 			console.log('Patient appointment scheduled:')
 			const apptData = JSON.parse(content)
 			console.log(apptData)
+			appointmentData.appointmentScheduled = apptData
 			signal.emit('next')
 		})
 	})
@@ -340,6 +346,54 @@ function scheduleAppointment() {
 	req.end()
 }
 
+function cancelAppointment() {
+	let patientid = appointmentData.patientid ?
+		appointmentData.patientid : 30837
+
+	let appointmentid = appointmentData.appointmentid ?
+		appointmentData.appointmentid : 883990
+
+	// Create and encode parameters
+	let parameters = {
+		appointmentcancelreasonid:41,
+		cancellationreason:'unknown',
+		ignoreschedulablepermission:false,
+		patientid:patientid
+	}
+	const query = '?' + querystring.stringify(parameters)
+
+	const apptPath =
+		path_join(version, practiceid, 'appointments', appointmentid, 'cancel')
+		+ query
+	console.log('apptPath: \'' + apptPath + '\'')
+
+	var req = https.request({
+		hostname: api_hostname,
+		method: 'PUT',
+		path: apptPath,
+		headers: {
+			'authorization': 'Bearer ' + token
+		},
+	}, function(response) {
+		response.setEncoding('utf8')
+		var content = ''
+		response.on('data', function(chunk) {
+			content += chunk
+		})
+		response.on('end', function() {
+			console.log('Patient appointment cancelled:')
+			const apptData = JSON.parse(content)
+			console.log(apptData)
+			signal.emit('next')
+		})
+	})
+	req.on('error', function(e) {
+		console.log(e.message)
+	})
+
+	// req.write(content)
+	req.end()
+}
 // Scheduling an appointment:
 // (ripped from quickstart here: https://developer.athenahealth.com/io-docs)
 // 1. get practice id
@@ -366,19 +420,31 @@ function scheduleAppointment() {
 // Can use get providers (takes practiedid) to get this--71 seems to always have
 // office visit appointments.
 // Appointmenttypeid 2, 82 and 683 work so far.
+// var appointmentData = {
+// 	practiceid: practiceid,
+// 	departmentid: 1,
+// 	patientid: 30837,
+// 	providerid: 71,
+// 	appointmenttypeid: 82,
+// 	appointmentid:883988
+// }
+
 var appointmentData = {
 	practiceid: practiceid,
 	departmentid: 1,
 	patientid: 30837,
 	providerid: 71,
 	appointmenttypeid: 82,
-	appointmentid:883988
+	appointmentSlots:undefined,
+	appointmentid:undefined,
+	appointmentScheduled:undefined
 }
 
 // This is one way of forcing the call order
 function main() {
 // var calls = [authentication, departments, createPatient, recordPatientIssue findAppointmentSlots]
-	let calls = [findAppointmentSlots, scheduleAppointment]
+  let calls = [findAppointmentSlots, scheduleAppointment]
+	// let calls = [cancelAppointment]
 	signal.on('next', function() {
 		var nextCall = calls.shift()
 		if (nextCall) {
