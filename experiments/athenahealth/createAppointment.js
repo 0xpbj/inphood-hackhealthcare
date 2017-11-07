@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-let dotEnv = require('dotenv').config({path: './../../.env-production'})
 let events = require('events')
 let https = require('https')
 let querystring = require('querystring')
@@ -376,9 +375,9 @@ var appointmentData = {
 }
 
 // This is one way of forcing the call order
-function main() {
-// var calls = [authentication, departments, createPatient, recordPatientIssue findAppointmentSlots]
-	let calls = [findAppointmentSlots, scheduleAppointment]
+module.exports = function() {
+	var calls = [authentication, departments, createPatient, recordPatientIssue, findAppointmentSlots]
+	// let calls = [findAppointmentSlots, scheduleAppointment]
 	signal.on('next', function() {
 		var nextCall = calls.shift()
 		if (nextCall) {
@@ -387,5 +386,3 @@ function main() {
 	})
 	signal.emit('next')
 }
-
-main()
