@@ -5,9 +5,7 @@
   "main": "kittenbot.js",
   "dependencies": {
     "body-parser": "^1.15.2",
-    "botkit": "^0.6",
-    "botkit-storage-firebase": "^1.0.0",
-    "botkit-storage-mongo": "^1.0.6",
+    "botkit": "^0.4.0",
     "dashbot": "0.7.4",
     "debug": "^2.3.3",
     "dotenv": "^4.0.0",

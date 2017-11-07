@@ -22,26 +22,26 @@ var fs = require('fs')
 
 var controller = Botkit.slackbot({debug: false})
 
-if (!process.env.SLACK_TOKEN) {
+if (!process.env.slack_token_path) {
   console.log('Error: Specify slack_token_path in environment')
   process.exit(1)
 }
 
-// fs.readFile(process.env.SLACK_TOKEN, function (err, data) {
-//   if (err) {
-//     console.log('Error: Specify token in slack_token_path file')
-//     process.exit(1)
-//   }
-//   data = String(data)
-//   data = data.replace(/\s/g, '')
-//   controller
-//     .spawn({token: data})
-//     .startRTM(function (err) {
-//       if (err) {
-//         throw new Error(err)
-//       }
-//     })
-// })
+fs.readFile(process.env.slack_token_path, function (err, data) {
+   if (err) {
+     console.log('Error: Specify token in slack_token_path file')
+     process.exit(1)
+   }
+   data = String(data)
+   data = data.replace(/\s/g, '')
+   controller
+     .spawn({token: data})
+     .startRTM(function (err) {
+       if (err) {
+         throw new Error(err)
+       }
+     })
+ })
 /*
 
 Botkit Studio Skill module to enhance the "scratch" script
@@ -72,7 +72,7 @@ var type = "";
 const requestPromise = require('request-promise')
 
 function doctorSearch(location, radius, limit, type, callback) {
-  const api_key = process.env.BETTERDOCTOR_COM_API_KEY
+  const api_key = process.env.betterdoctor_path
   const resource_url = 'https://api.betterdoctor.com/2016-03-01/doctors?location='+location+','+radius+'&skip=2&limit='+limit+'&user_key=' + api_key;
 
   var bdOpts = {
@@ -549,7 +549,6 @@ function recordPatientIssue() {
     req.end()
 }
 
-module.exports = function(controller) {
     controller.hears('another_keyword','direct_message,direct_mention',function(bot,message) {
       var reply_with_attachments = {
         'username': 'My bot' ,
@@ -1392,4 +1391,3 @@ module.exports = function(controller) {
         convo.addMessage({text: 'Ok, great we have you scheduled for that appointment!'},'appt_finish');
       })
     })
-}
