@@ -578,7 +578,7 @@ module.exports = function(controller) {
 
         //CONFIRM START
         convo.addQuestion({
-            text: 'Welcome to the prediabetes risk assessment.',
+            text: 'TESTING: Welcome to the prediabetes risk assessment.',
             attachments:[
                 {
                     title: 'Do you want to proceed?',
