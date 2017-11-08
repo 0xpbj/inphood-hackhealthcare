@@ -4,6 +4,7 @@
   "description": "A sample Slack Botkit bot.",
   "main": "kittenbot.js",
   "dependencies": {
+    "api-ai-botkit": "^1.1.1",
     "body-parser": "^1.15.2",
     "botkit": "^0.6.6",
     "botkit-storage-firebase": "git+https://github.com/esjay/botkit-storage-firebase.git",
