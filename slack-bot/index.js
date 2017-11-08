@@ -7,7 +7,7 @@
 var fs = require('fs')
 var Botkit = require('botkit')
 var requestPromise = require('request-promise')
-require('dotenv').config()
+var dotEnv = require('dotenv').config({path: './.env'})
 
 const firebase = require('firebase')
 if (firebase.apps.length === 0) {
@@ -77,11 +77,11 @@ var type = "";
 
 
 function doctorSearch(location, radius, limit, type, callback) {
-  //const api_key = process.env.betterdoctor_path
+  const api_key = process.env.BETTERDOCTOR_COM_API_KEY
   // TODO: No Really TODO: TODO: TODO:
   // TODO: use the mechanism above or an env file to load this hardcoded token
   // (PBJ will fix):
-  const api_key = process.env.BETTERDOCTOR_COM_API_KEY
+  //const api_key = process.env.BETTERDOCTOR_COM_API_KEY
 
   const resource_url = 'https://api.betterdoctor.com/2016-03-01/doctors?location='+location+','+radius+'&skip=2&limit='+limit+'&user_key=' + api_key;
   
