@@ -7,42 +7,52 @@
 var fs = require('fs')
 var Botkit = require('botkit')
 var requestPromise = require('request-promise')
+require('dotenv').config()
 
 const firebase = require('firebase')
 if (firebase.apps.length === 0) {
   firebase.initializeApp({
-    databaseURL: "https://inphooddb-e0dfd.firebaseio.com",
-    apiKey: "AIzaSyC6q3xNF48k98N-SkJOnkryA8J3ZeYOJPg",
-    authDomain: "inphooddb-e0dfd.firebaseapp.com",
-    projectId: "inphooddb-e0dfd",
-    storageBucket: "inphooddb-e0dfd.appspot.com"
+    apiKey: process.env.FIREBASE_API_KEY,
+    authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+    databaseURL: process.env.FIREBASE_DATABASE_URL,
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    storageBucket: process.env.FIREBASE_STORAGE_BUCKET
   })
   firebase.auth().signInAnonymously()
   console.log('**************************FIREBASE AUTH')
 }
+var controller = Botkit.slackbot({debug: false})
 
-if (!process.env.slack_token_path) {
+if (!process.env.SLACK_TOKEN) {
   console.log('Error: Specify slack_token_path in environment')
   process.exit(1)
 }
-
-var controller = Botkit.slackbot({debug: false})
-
-fs.readFile(process.env.slack_token_path, function (err, data) {
-   if (err) {
-     console.log('Error: Specify token in slack_token_path file')
-     process.exit(1)
-   }
-   data = String(data)
-   data = data.replace(/\s/g, '')
-   controller
-     .spawn({token: data})
+else {
+  controller
+     .spawn({token: process.env.SLACK_TOKEN})
      .startRTM(function (err) {
        if (err) {
          throw new Error(err)
        }
      })
- })
+}
+
+
+// fs.readFile(process.env.slack_token_path, function (err, data) {
+//    if (err) {
+//      console.log('Error: Specify token in slack_token_path file')
+//      process.exit(1)
+//    }
+//    data = String(data)
+//    data = data.replace(/\s/g, '')
+//    controller
+//      .spawn({token: data})
+//      .startRTM(function (err) {
+//        if (err) {
+//          throw new Error(err)
+//        }
+//      })
+//  })
 
 
 var age = "";
@@ -71,7 +81,7 @@ function doctorSearch(location, radius, limit, type, callback) {
   // TODO: No Really TODO: TODO: TODO:
   // TODO: use the mechanism above or an env file to load this hardcoded token
   // (PBJ will fix):
-  const api_key = '45d3ce54195f21d3a3510e9d766f32fe'
+  const api_key = process.env.BETTERDOCTOR_COM_API_KEY
 
   const resource_url = 'https://api.betterdoctor.com/2016-03-01/doctors?location='+location+','+radius+'&skip=2&limit='+limit+'&user_key=' + api_key;
   
@@ -271,7 +281,7 @@ function getHeightWeightScore(height, weight) {
 
         //CONFIRM START
         convo.addQuestion({
-            text: 'AC TESTER: Welcome to the prediabetes risk assessment.',
+            text: 'PBJ TESTER: Welcome to the prediabetes risk assessment.',
             attachments:[
                 {
                     title: 'Do you want to proceed?',
