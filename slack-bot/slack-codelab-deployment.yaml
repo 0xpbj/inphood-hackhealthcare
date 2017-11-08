@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
       - name: master
-        image: gcr.io/inphooddb-e0dfd/slack-codelab:v2  # Replace PROJECT_ID
+        image: gcr.io/inphooddb-e0dfd/slack-codelab:v1  # Replace PROJECT_ID
                                                         # with your project ID.
         volumeMounts:
         - name: slack-token

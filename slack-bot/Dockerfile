@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM node:5.4
+FROM node:6.11.1
 
 # Install app dependencies.
 COPY package.json /src/package.json
@@ -20,6 +20,9 @@ WORKDIR /src
 RUN npm install
 
 # Bundle app source.
+COPY utils.js /src
+COPY constants.js /src
+COPY conversationDirector.js /src
 COPY index.js /src
 
 CMD ["node", "/src/index.js"]

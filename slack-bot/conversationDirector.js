@@ -46,7 +46,7 @@ function doctorSearch(location, radius, limit, type, callback) {
     json: true,
     resolveWithFullResponse: true
   }
-  let retInfo = ""
+  let retInfo = "";
   requestPromise(bdOpts)
   .then(data => {
     // console.log(data.body)
