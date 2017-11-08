@@ -1,32 +1,23 @@
-/* *****************************************************************************
-Copyright 2016 Google Inc. All Rights Reserved.
+/******************************************************************************
+ *
+ * Copyright (c) 2017 inPhood Inc. All Rights Reserved.
+ *
+ */
 
-Licensed under the Apache License, Version 2.0 (the "License")
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-********************************************************************************
-
-This is a sample Slack bot built with Botkit.
-*/
-require('dotenv').config()
-var Botkit = require('botkit')
 var fs = require('fs')
+var Botkit = require('botkit')
+var requestPromise = require('request-promise')
 
-var controller = Botkit.slackbot({debug: false})
+var events = require('events')
+var https = require('https')
+var querystring = require('querystring')
 
 if (!process.env.slack_token_path) {
   console.log('Error: Specify slack_token_path in environment')
   process.exit(1)
 }
 
+var controller = Botkit.slackbot({debug: false})
 fs.readFile(process.env.slack_token_path, function (err, data) {
    if (err) {
      console.log('Error: Specify token in slack_token_path file')
@@ -42,11 +33,7 @@ fs.readFile(process.env.slack_token_path, function (err, data) {
        }
      })
  })
-/*
 
-Botkit Studio Skill module to enhance the "scratch" script
-
-*/
 
 var age = "";
 var sex = "";
@@ -69,11 +56,19 @@ var results = [];
 var type = "";
 
 
-const requestPromise = require('request-promise')
-
 function doctorSearch(location, radius, limit, type, callback) {
-  const api_key = process.env.betterdoctor_path
+  //const api_key = process.env.betterdoctor_path
+  // TODO: No Really TODO: TODO: TODO:
+  // TODO: use the mechanism above or an env file to load this hardcoded token
+  // (PBJ will fix):
+  const api_key = '45d3ce54195f21d3a3510e9d766f32fe'
+
   const resource_url = 'https://api.betterdoctor.com/2016-03-01/doctors?location='+location+','+radius+'&skip=2&limit='+limit+'&user_key=' + api_key;
+  
+  console.log('doctorSearch:')
+  console.log('   api_key = ' + api_key)
+  console.log('   url =     ' + resource_url)
+  console.log()
 
   var bdOpts = {
     uri: resource_url,
@@ -171,6 +166,7 @@ function doctorSearch(location, radius, limit, type, callback) {
     return
   })
 }
+
 // The keys below are height in feet and inches with the quotes removed.
 // For example:  4'10" --> 410
 //
@@ -228,326 +224,12 @@ function getHeightWeightScore(height, weight) {
   return 0
 }
 
-let events = require('events')
-let https = require('https')
-let querystring = require('querystring')
 
-const key = process.env.ATHENAHEALTH_API_KEY
-const secret = process.env.ATHENAHEALTH_SECRET
-const version = 'preview1'
-const practiceid = 195900
 
-const auth_prefixes = {
-    v1: '/oauth',
-    preview1: '/oauthpreview',
-    openpreview1: '/oauthopenpreview',
-}
 
-const api_hostname = 'api.athenahealth.com'
 
-// This is a useful function to have
-function path_join() {
-    // trim slashes from arguments, prefix a slash to the beginning of each, re-join (ignores empty parameters)
-    var args = Array.prototype.slice.call(arguments, 0)
-    var nonempty = args.filter(function(arg, idx, arr) {
-        return typeof(arg) != 'undefined'
-    })
-    var trimmed = nonempty.map(function(arg, idx, arr) {
-        return '/' + String(arg).replace(new RegExp('^/+|/+$'), '')
-    })
-    return trimmed.join('')
-}
-// Appointmenttypeid 2, 82 and 683 work so far.
-// dummydata
-var appointmentData = {
-    practiceid: practiceid,
-    departmentid: 1,
-    patientid: undefined,
-    providerid: 71,
-    appointmenttypeid: 2,
-    appointmentid: undefined
-}
-// var appointmentData = {
-//     practiceid: practiceid,
-//     departmentid: 1,
-//     patientid: 30837,
-//     providerid: 71,
-//     appointmenttypeid: 2,
-//     appointmentid:883988
-// }
 
-// Since we want these functions to run in a set order, we need a way to signal for the next one.
-var signal = new events.EventEmitter
 
-// We need to save the token in an outer scope, because of callbacks.
-var token = process.env.ATHENAHEALTH_TOKEN
-//var token = undefined
-
-function authentication() {
-  // TODO: token needs to be updated once per hour or you'll get a 401 error
-  // repsonse. Getting it for every API call will result in getting locked out.
-  //
-  if (token) {
-    console.log('Using athenahealth token from env file: \'' + token + '\'')
-    console.log('   If you see "<h1>Developer Inactive</h1>" then refresh the token.')
-        signal.emit('next')
-  } else {
-    var req = https.request({
-      // Set up the request, making sure the content-type header is set. Let the https library do
-      // the auth header (including base64 encoding) for us.
-      hostname: api_hostname,
-      method: 'POST',
-      path: path_join(auth_prefixes[version], '/token'),
-      auth: key + ':' + secret,
-      headers: {'content-type': 'application/x-www-form-urlencoded'},
-    }, function(response) {
-      response.setEncoding('utf8')
-      var content = ''
-      response.on('data', function(chunk) {
-        content += chunk
-      })
-      response.on('end', function() {
-        var authorization = JSON.parse(content)
-        // Save the token!
-        token = authorization.access_token
-        console.log(token)
-        signal.emit('next')
-      })
-    })
-
-    req.on('error', function(e) {
-      console.log(e.message)
-    })
-
-    // The one parameter required for OAuth
-    req.write(querystring.stringify({grant_type: 'client_credentials'}))
-    req.end()
-  }
-}
-
-// Patients we've created:
-//  30836, 30837
-function createPatient() {
-// dummydata
-
-    let parameters = {
-        departmentid:appointmentData.departmentid,
-        dob: dob,
-        firstname: first,
-        homephone: phone,
-        lastname: last
-    }
-    // let parameters = {
-    //     departmentid:appointmentData.departmentid,
-    //     dob:'1/1/1970',
-    //     firstname:'Jason',
-    //     homephone:'408-746-8488',
-    //     lastname:'Foo'
-    // }
-    const content = querystring.stringify(parameters)
-
-    const patientsPath = path_join(version, practiceid, '/patients')
-    console.log('patientsPath: \'' + patientsPath + '\'')
-
-    var req = https.request({
-        hostname: api_hostname,
-        method: 'POST',
-        path: patientsPath,
-        headers: {
-            'authorization': 'Bearer ' + token,
-            'content-type': 'application/x-www-form-urlencoded',
-            'content-length': content.length, // apparently we have to set this ourselves when using
-                                                              // application/x-www-form-urlencoded
-        },
-    }, function(response) {
-        response.setEncoding('utf8')
-        var content = ''
-        response.on('data', function(chunk) {
-            content += chunk
-        })
-        response.on('end', function() {
-            console.log('Patient added:')
-            const patientData = JSON.parse(content)
-            console.log(patientData)
-            appointmentData.patientid = patientData[0].patientid
-
-            signal.emit('next')
-        })
-    })
-    req.on('error', function(e) {
-        console.log(e.message)
-    })
-
-    req.write(content)
-    req.end()
-}
-
-function findAppointmentSlots() {
-    // Create and encode parameters
-    const parameters = {
-        appointmenttypeid:appointmentData.appointmenttypeid,
-        departmentid:appointmentData.departmentid,
-        providerid:appointmentData.providerid,
-        ignoreschedulablepermission:false,
-        limit:4,
-        offset:0,
-        startdate:'11/07/2017',
-        enddate:'11/14/2017'
-    }
-    const query = '?' + querystring.stringify(parameters)
-
-  const aptsPath = path_join(version, practiceid, 'appointments', 'open') + query
-  console.log('aptsPath: \'' + aptsPath + '\'')
-
-    var req = https.request({
-        hostname: api_hostname,
-        method: 'GET',
-        path: aptsPath,
-        // We set the auth header ourselves this time, because we have a token now.
-        headers: {'authorization': 'Bearer ' + token},
-    }, function(response) {
-        response.setEncoding('utf8')
-        var content = ''
-        response.on('data', function(chunk) {
-            content += chunk
-        })
-        response.on('end', function() {
-            console.log('Appointments:')
-            const apptData = JSON.parse(content)
-
-            console.log(apptData.totalcount + ' appointments found.')
-
-            for (let appointment of apptData.appointments) {
-                console.log('   appointmentid:' + appointment.appointmentid)
-                console.log('   ' + appointment.starttime + ' ' + appointment.date)
-                console.log('   ' + appointment.duration + ' minutes')
-                console.log()
-                // appts += '   appointmentid:' + appointment.appointmentid
-                // appts += '   ' + appointment.starttime + ' ' + appointment.date.replace(/\//g, "-")
-                // appts += '   ' + appointment.duration + ' minutes\n'
-                // {
-                //     "name":"yes",
-                //     "text": "Yes",
-                //     "value": "yes",
-                //     "style": "primary",
-                //     "type": "button",
-                // }
-                let str = appointment.starttime + ' ' + appointment.date.replace(/\//g, "-")
-                appts.push({
-                    name: 'appointmentvalues',
-                    text: str,
-                    value: appointment.appointmentid,
-                    style: "primary",
-                    type: "button"
-                })
-            }
-            signal.emit('next')
-        })
-    })
-    req.on('error', function(e) {
-        console.log(e.message)
-    })
-
-    req.end()
-}
-
-function scheduleAppointment() {
-    let patientid = appointmentData.patientid ?
-        appointmentData.patientid : 30837
-
-    let appointmentid = appointmentData.appointmentid
-    if (!appointmentid) {
-        console.log('scheduleAppointment: setting appointmentid to slot 0')
-        const apptSlot0 = appointmentData.appointmentSlots[0]
-        appointmentid = apptSlot0.appointmentid
-    }
-
-    // Create and encode parameters
-    let parameters = {
-        appointmenttypeid:appointmentData.appointmenttypeid,
-        patientid:patientid,
-        ignoreschedulablepermission:false
-    }
-    const query = '?' + querystring.stringify(parameters)
-
-    const apptPath = path_join(
-        version, practiceid, 'appointments', appointmentid) + query
-    console.log('apptPath: \'' + apptPath + '\'')
-
-    var req = https.request({
-        hostname: api_hostname,
-        method: 'PUT',
-        path: apptPath,
-        headers: {
-            'authorization': 'Bearer ' + token
-        },
-    }, function(response) {
-        response.setEncoding('utf8')
-        var content = ''
-        response.on('data', function(chunk) {
-            content += chunk
-        })
-        response.on('end', function() {
-            console.log('Patient appointment scheduled:')
-            const apptData = JSON.parse(content)
-            console.log(apptData)
-            appointmentData.appointmentScheduled = apptData
-            signal.emit('nextSchedule')
-        })
-    })
-    req.on('error', function(e) {
-        console.log(e.message)
-    })
-
-    // req.write(content)
-    req.end()
-}
-
-function recordPatientIssue() {
-    let parameters = {
-        departmentid:appointmentData.departmentid,
-        snomedcode:43396009
-    }
-    const content = querystring.stringify(parameters)
-
-    let patientid = appointmentData.patientid ?
-        appointmentData.patientid : 30837
-
-    const problemsPath = path_join(
-        version, practiceid, 'chart', patientid, 'problems')
-
-    console.log('problemsPath: \'' + problemsPath + '\'')
-
-    var req = https.request({
-        hostname: api_hostname,
-        method: 'POST',
-        path: problemsPath,
-        headers: {
-            'authorization': 'Bearer ' + token,
-            'content-type': 'application/x-www-form-urlencoded',
-            'content-length': content.length, // apparently we have to set this ourselves when using
-                                                              // application/x-www-form-urlencoded
-        },
-    }, function(response) {
-        response.setEncoding('utf8')
-        var content = ''
-        response.on('data', function(chunk) {
-            content += chunk
-        })
-        response.on('end', function() {
-            console.log('Patient problem added:')
-            const patientProblemData = JSON.parse(content)
-            console.log(patientProblemData)
-            signal.emit('next')
-        })
-    })
-    req.on('error', function(e) {
-        console.log(e.message)
-    })
-
-    req.write(content)
-    req.end()
-}
 
     controller.hears('another_keyword','direct_message,direct_mention',function(bot,message) {
       var reply_with_attachments = {
@@ -577,7 +259,7 @@ function recordPatientIssue() {
 
         //CONFIRM START
         convo.addQuestion({
-            text: 'TESTING: Welcome to the prediabetes risk assessment.',
+            text: 'AC IZ HERE TESTING: Welcome to the prediabetes risk assessment.',
             attachments:[
                 {
                     title: 'Do you want to proceed?',
@@ -612,6 +294,13 @@ function recordPatientIssue() {
                 pattern: "no",
                 callback: function(response, convo) {
                     convo.gotoThread('end_convo');
+                },
+            },
+            // TODO: Remove pattern AC when releasing (this is a debug shortcut)
+            {
+                pattern: "ac",
+                callback: function(response, convo) {
+                    convo.gotoThread('get_zipcode');
                 },
             },
             {
@@ -1232,158 +921,6 @@ function recordPatientIssue() {
                 }
             }
         ],{}, 'get_docs');
-
-        //GET USER FIRST NAME
-        convo.addQuestion('What is your first name?',[
-            {
-                pattern: /[a-zA-Z]+/g,
-                callback: function(response, convo) {
-                    first = response.text
-                    convo.gotoThread('get_last_name')
-                },
-            },
-            {
-                pattern: bot.utterances.quit,
-                callback: function(response, convo) {
-                    convo.gotoThread('end_convo');
-                }
-            },
-            {
-                default: true,
-                callback: function(response, convo) {
-                    convo.repeat();
-                    convo.next();
-                }
-            }
-        ],{}, 'get_first_name');
-
-        //GET USER LAST NAME
-        convo.addQuestion('What is your last name?',[
-            {
-                pattern: /[a-zA-Z]+/g,
-                callback: function(response, convo) {
-                    last = response.text
-                    convo.gotoThread('get_dob')
-                },
-            },
-            {
-                pattern: bot.utterances.quit,
-                callback: function(response, convo) {
-                    convo.gotoThread('end_convo');
-                }
-            },
-            {
-                default: true,
-                callback: function(response, convo) {
-                    convo.repeat();
-                    convo.next();
-                }
-            }
-        ],{}, 'get_last_name');
-
-        //GET USER DOB
-        convo.addQuestion('What is your date of birth? (e.g 10/15/1970)',[
-            {
-                pattern: /[0-9\/]+/g,
-                callback: function(response, convo) {
-                    dob = response.text
-                    convo.gotoThread('get_phone_number')
-                },
-            },
-            {
-                pattern: bot.utterances.quit,
-                callback: function(response, convo) {
-                    convo.gotoThread('end_convo');
-                }
-            },
-            {
-                default: true,
-                callback: function(response, convo) {
-                    convo.repeat();
-                    convo.next();
-                }
-            }
-        ],{}, 'get_dob');
-
-        //GET USER PHONE NUMBER
-        convo.addQuestion('What is your phone number?\n`Note: Please be patient while we find your appointment.`',[
-            {
-                pattern: /[0-9\-\(\)]+/g,
-                callback: function(response, convo) {
-                    phone = response.text
-                    console.log('Ok looking for clinic near ' + zip + ' for ' + first + ' ' + last + ', phone: ' + phone)
-                    let calls = [authentication, createPatient, recordPatientIssue, findAppointmentSlots]
-                    signal.on('next', function() {
-                        let nextCall = calls.shift()
-                        if (nextCall) {
-                            console.log('processing ...')
-                            // convo.say('processing...')
-                            // convo.next()
-                            nextCall()
-                        } else {
-                            convo.gotoThread('set_appt')
-                        }
-                    })
-                    signal.emit('next')
-                    // convo.gotoThread('finish')
-                },
-            },
-            {
-                pattern: bot.utterances.quit,
-                callback: function(response, convo) {
-                    convo.gotoThread('end_convo');
-                }
-            },
-            {
-                default: true,
-                callback: function(response, convo) {
-                    convo.repeat();
-                    convo.next();
-                }
-            }
-        ],{}, 'get_phone_number');
-      
-        convo.addQuestion({
-            text: 'Here are your appointment options\n`Note: Please be patient while we book your appointment.`',
-            attachments:[
-                {
-                    title: 'Please pick one',
-                    callback_id: '8',
-                    attachment_type: 'default',
-                    actions: appts
-                }
-            ]
-        },[
-            {
-                pattern: /[0-9]+/g,
-                callback: function(response, convo) {
-                    console.log('Response from brokern', response.text)
-                    mappt = response.text
-                    appointmentData.appointmentid = mappt
-                    let calls2 = [scheduleAppointment]
-                    signal.on('nextSchedule', function() {
-                        let nextCall = calls2.shift()
-                        if (nextCall) {
-                            console.log('WORKING PLEASE')
-                            // convo.say('processing...')
-                            // convo.next()
-                            nextCall()
-                        } else {
-                            console.log('DOUBLE TROUBLE')
-                            convo.gotoThread('appt_finish')    
-                        }
-                    })
-                    signal.emit('nextSchedule')
-                },
-            },
-            {
-                default: true,
-                callback: function(response, convo) {
-                    convo.repeat();
-                    convo.next();
-                }
-            }
-        ],{}, 'set_appt')
 
         convo.addMessage({text: 'Ok looking for clinic near {{vars.zip}} for {{vars.first}} {{vars.last}} at phone: {{vars.phone}}'}, 'repeat_back')
         convo.addMessage({text: 'Congratulations! From the answers you provided, it does not appear that you are at increased risk for having Type 2 Diabetes.'}, 'notdiabetic')
