@@ -8,9 +8,18 @@ var fs = require('fs')
 var Botkit = require('botkit')
 var requestPromise = require('request-promise')
 
-var events = require('events')
-var https = require('https')
-var querystring = require('querystring')
+const firebase = require('firebase')
+if (firebase.apps.length === 0) {
+  firebase.initializeApp({
+    databaseURL: "https://inphooddb-e0dfd.firebaseio.com",
+    apiKey: "AIzaSyC6q3xNF48k98N-SkJOnkryA8J3ZeYOJPg",
+    authDomain: "inphooddb-e0dfd.firebaseapp.com",
+    projectId: "inphooddb-e0dfd",
+    storageBucket: "inphooddb-e0dfd.appspot.com"
+  })
+  firebase.auth().signInAnonymously()
+  console.log('**************************FIREBASE AUTH')
+}
 
 if (!process.env.slack_token_path) {
   console.log('Error: Specify slack_token_path in environment')
@@ -18,6 +27,7 @@ if (!process.env.slack_token_path) {
 }
 
 var controller = Botkit.slackbot({debug: false})
+
 fs.readFile(process.env.slack_token_path, function (err, data) {
    if (err) {
      console.log('Error: Specify token in slack_token_path file')
@@ -251,6 +261,8 @@ function getHeightWeightScore(height, weight) {
 
 
     controller.hears(['^risk$'], 'direct_message, direct_mention, ambient, mention', function(bot, message) {
+      const dbUserRef = firebase.database().ref('/global/diagnosisai/users/tester')
+      dbUserRef.update({booz: 'passed writing here'})
       bot.startConversation(message, function(err, convo){
         //END THE CONVERSATION
         convo.addMessage({
@@ -259,7 +271,7 @@ function getHeightWeightScore(height, weight) {
 
         //CONFIRM START
         convo.addQuestion({
-            text: 'AC IZ HERE TESTING: Welcome to the prediabetes risk assessment.',
+            text: 'AC TESTER: Welcome to the prediabetes risk assessment.',
             attachments:[
                 {
                     title: 'Do you want to proceed?',
