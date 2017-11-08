@@ -40,3 +40,19 @@ exports.yesNoButtonActions = [{
     "type": "button",
   }
 ]
+
+exports.insurers = [
+  { "text": "I don't know", "value":  '*', },
+  { "text": "Aetna", "value":  'aetna', },
+  { "text": "Anthem", "value":  'anthem', },
+  { "text": "Blue Shield of California", "value":  'blueshieldofcalifornia' },
+  { "text": "Cigna", "value":  'cigna', },
+  { "text": "Coventry Health Care", "value":  'coventryhealthcare', },
+  { "text": "Health Net", "value":  'healthnet', },
+  { "text": "Humana", "value":  'humana', },
+  { "text": "Kaiser Permanente", "value":  'kaiserpermanente', },
+  { "text": "MetLife", "value":  'metlife', },
+  { "text": "PacificSource Health Plans", "value":  'pacificsourcehealthplans', },
+  { "text": "Providence Health System", "value":  'providencehealthsystem', },
+  { "text": "United Healthcare", "value":  'unitedhealthcare' }
+]
