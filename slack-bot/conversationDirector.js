@@ -19,6 +19,21 @@ var insuranceType = "";
 var results = [];
 var type = "";
 
+//var userData = {
+//  age = undefined,
+//  sex = undefined,
+//  fam = undefined,  // Immediate family member has diabetes.
+//  hbp = undefined,  // Diagnosed high blood pressure.
+//  phy = undefined,  // Physically active.
+//  hgt = undefined,  // Height (i.e. 5'10 or 5 10).
+//  wgt = undefined,  // Weight (lbs, i.e. 210).
+//  zip = undefined,
+//  score = 0,
+//  docs = [],
+//  insuranceType = undefined,
+//  results = [],
+//  type = ""
+//}
 
 var bot = undefined
 
@@ -88,13 +103,6 @@ function doctorSearch(location, radius, limit, type, callback) {
         iretInfo += '   ' + practice.name + ' (' + Math.round(practice.distance) + ' miles)\n'
         dist = Math.round(practice.distance)
       }
-      // {
-      //     "name":"yes",
-      //     "text": "Yes",
-      //     "value": "yes",
-      //     "style": "default",
-      //     "type": "button",
-      // }
       let dstr = profile.first_name + ' ' + profile.last_name + ' (' + dist + ' miles)'
       let clinic = 'Dr. ' + profile.first_name + ' ' + profile.last_name
       docs.push({
