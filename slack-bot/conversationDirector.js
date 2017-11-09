@@ -187,6 +187,7 @@ function getHeightWeightScore(height, weight) {
 //       It initializes the bot global var for use
 //       in main.
 exports.init = function(aBot) {
+  console.log('conversation director init')
   bot = aBot
 }
 
