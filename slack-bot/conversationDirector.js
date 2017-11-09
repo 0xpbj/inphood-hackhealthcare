@@ -14,7 +14,8 @@ var hgt = "";
 var wgt = "";
 var zip = "";
 var score = 0;
-var docs = [];
+var docAtts = [];
+var docSelection = ""
 var insuranceType = "";
 var results = [];
 var type = "";
@@ -29,7 +30,8 @@ var type = "";
 //  wgt = undefined,  // Weight (lbs, i.e. 210).
 //  zip = undefined,
 //  score = 0,
-//  docs = [],
+//  docAtts = [],
+//  docSelection = undefined,
 //  insuranceType = undefined,
 //  results = [],
 //  type = ""
@@ -74,6 +76,11 @@ function doctorSearch(location, radius, limit, type, callback) {
     console.log('data.body.data[]')
     console.log('- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ')
     let bounce = 0
+
+    docAtts.push({
+      "pretext": "Here are the nearest doctors available:"
+    })
+
     for (let dataNode of data.body.data) {
       let iretInfo = ''
       bounce++
@@ -105,13 +112,41 @@ function doctorSearch(location, radius, limit, type, callback) {
       }
       let dstr = profile.first_name + ' ' + profile.last_name + ' (' + dist + ' miles)'
       let clinic = 'Dr. ' + profile.first_name + ' ' + profile.last_name
-      docs.push({
-        name: "doctorpractice",
-        text: dstr,
-        value: clinic,
-        style: "default",
-        type: "button"
+
+      let specialityStr = ""
+      for (let idx = 0; idx < specialties.length; idx++) {
+        const speciality = specialties[idx]
+        specialityStr += speciality.name
+        if (idx !== specialties.length - 1) {
+          specialityStr += ", "
+        }
+      }
+      specialityStr = specialityStr.trim()
+
+      const docName = "Dr. " + profile.first_name + " " + profile.last_name +
+                      "  (" + dist + " miles away)"
+      const fallbackStr = docName + ", " + specialityStr + ", " + dist + " miles away"
+      const green = "#36a64f"
+      const docText = specialityStr
+      const imgUrl = profile.image_url
+
+                        
+      docAtts.push({
+        "fallback": fallbackStr,
+        "color": green,
+        "title": docName,
+        "text": docText,
+        "thumb_url": imgUrl,
+        "actions": [
+          {
+          "name": "contact",
+          "text": "Contact Info",
+          "type": "button",
+          "value": clinic 
+          }
+        ]
       })
+
       console.log('   -----')
       iretInfo += '   -----\n'
       let count = 0
@@ -688,14 +723,7 @@ exports.main = function(err, convo) {
   ],{}, 'get_insur');
 
   convo.addQuestion({
-      attachments:[
-          {
-              title: 'Here are the nearest doctors available',
-              callback_id: '17',
-              attachment_type: 'default',
-              actions: docs
-          }
-      ]
+      attachments: docAtts
   },[
       {
           pattern: /[A-Za-z\. ]+/g,
@@ -722,7 +750,7 @@ exports.main = function(err, convo) {
   convo.addQuestion(
     {
       text: "Great! You can make an appointement with Dr. <TODO: name> by " +
-             "calling <TODO: number>. Would you like to help make California " +
+             "calling <TODO: number>.\n\nWould you like to help make California " +
              "even healthier?"
     }, 
     [
